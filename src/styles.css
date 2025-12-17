@@ -1,0 +1,25 @@
+.App {
+  font-family: sans-serif;
+  text-align: center;
+}
+/* 設定整個畫面是一個 App 容器 */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* 手機版：不要橫向捲動，也避免整頁被拉出白邊 */
+body {
+  overflow-x: hidden;
+  background: #f3f4f6;
+  overscroll-behavior-y: contain;
+}
+
+/* App 外殼：置中 + 限制寬度，避免左右留白亂跑 */
+.app-shell {
+  max-width: 480px;
+  margin: 0 auto;
+}
