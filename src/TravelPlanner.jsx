@@ -223,7 +223,53 @@ const NavButton = ({ icon: Icon, label, active, onClick, theme }) => (
   </button>
 );
 
-改成 09:00
+const InputGroup = ({ label, type = "text", value, onChange, placeholder }) => {
+  const isTime = type === "time";
+  const isDate = type === "date";
+  const isPicker = isTime || isDate;
+
+  return (
+    <div className="group">
+      <label className="block text-sm font-medium text-gray-500 mb-1 group-focus-within:text-blue-500 transition-colors">
+        {label}
+      </label>
+
+      <div className="relative">
+        {/* 左側 icon：我們自己畫，永遠都會出現 */}
+        {isTime && (
+          <Clock
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+          />
+        )}
+        {isDate && (
+          <Calendar
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+          />
+        )}
+
+        <input
+          type={type}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          className={[
+            "w-full px-3 py-3 rounded-xl bg-gray-50 border-2 border-transparent",
+            "focus:bg-white focus:border-blue-500 outline-none transition-all",
+            "font-medium text-gray-800 placeholder-gray-300",
+            // ✅ 有 icon 的話，左邊留空間
+            isPicker ? "pl-10" : "",
+            // ✅ 你的原本設定保留
+            isPicker ? "pr-16" : "",
+            "overflow-visible",
+            "appearance-none",
+          ].join(" ")}
+        />
+      </div>
+    </div>
+  );
+};
 
 const MapButton = ({ type, query }) => {
   const openMap = (e) => {
@@ -369,6 +415,7 @@ const EventModal = ({
   theme,
 }) => {
   const fileInputRef = useRef(null);
+  const timeInputRef = useRef(null);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -424,6 +471,10 @@ const EventModal = ({
     { key: "transit", label: "大眾運輸", icon: Bus },
     { key: "plane", label: "飛機", icon: Plane },
   ];
+  const formatDateSlash = (yyyy_mm_dd) => {
+    if (!yyyy_mm_dd) return "";
+    return yyyy_mm_dd.replaceAll("-", "/"); // 2025-12-10 -> 2025/12/10
+  };
 
   return (
     <Modal
@@ -433,25 +484,66 @@ const EventModal = ({
     >
       <div className="space-y-4">
         <div className="flex gap-4">
-          <div className="flex-1">
-            <InputGroup
-              label="時間"
-              type="time"
-              value={formEvent.time}
-              onChange={(e) =>
-                setFormEvent({ ...formEvent, time: e.target.value })
-              }
-            />
+          {/* 時間 */}
+          <div className="flex-1 min-w-0">
+            <label className="block text-sm font-medium text-gray-500 mb-1">
+              時間
+            </label>
+
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                <Clock size={18} />
+              </div>
+
+              <input
+                type="text"
+                readOnly
+                value={formEvent.time || ""}
+                className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 border-2 border-transparent
+               focus:bg-white focus:border-blue-500 outline-none transition-all
+               font-medium text-gray-800 whitespace-nowrap truncate"
+              />
+
+              <input
+                type="time"
+                value={formEvent.time || ""}
+                onChange={(e) =>
+                  setFormEvent({ ...formEvent, time: e.target.value })
+                }
+                className="absolute inset-0 w-full h-full opacity-[0.01] cursor-pointer z-20"
+              />
+            </div>
           </div>
-          <div className="flex-1">
-            <InputGroup
-              label="日期"
-              type="date"
-              value={formEvent.tempDate}
-              onChange={(e) =>
-                setFormEvent({ ...formEvent, tempDate: e.target.value })
-              }
-            />
+
+          {/* 日期 */}
+          <div className="flex-1 min-w-0">
+            <label className="block text-sm font-medium text-gray-500 mb-1">
+              日期
+            </label>
+
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                <Calendar size={18} />
+              </div>
+
+              <input
+                type="text"
+                readOnly
+                value={formatDateSlash(formEvent.tempDate)}
+                className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 border-2 border-transparent
+               focus:bg-white focus:border-blue-500 outline-none transition-all
+               font-medium text-gray-800 whitespace-nowrap truncate"
+              />
+
+              <input
+                type="date"
+                value={formEvent.tempDate || ""}
+                onChange={(e) =>
+                  setFormEvent({ ...formEvent, tempDate: e.target.value })
+                }
+                className="absolute inset-0 w-full h-full opacity-[0.01] cursor-pointer z-20"
+              />
+            </div>
           </div>
         </div>
 
