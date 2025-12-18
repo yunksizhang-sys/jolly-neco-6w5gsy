@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   Calendar,
+  Clock,
   Plus,
   Trash2,
   X,
@@ -269,7 +270,6 @@ const InputGroup = ({ label, type = "text", value, onChange, placeholder }) => {
     </div>
   );
 };
-
 
 const MapButton = ({ type, query }) => {
   const openMap = (e) => {
@@ -4064,13 +4064,15 @@ export default function TravelPlanner() {
       </div>
 
       {/* 3. 底部導航 (標準 4 欄) - FIXED */}
-     <div className="
-    fixed left-1/2 bottom-[-2px] -translate-x-1/2
+      <div
+        className="
+    fixed left-1/2 bottom-[-8px] -translate-x-1/2
     w-full max-w-[480px]
     z-50
     px-4
     pb-[calc(12px+env(safe-area-inset-bottom))]
-  ">
+  "
+      >
         <div
           className="
       bg-white/95 backdrop-blur
@@ -4111,6 +4113,7 @@ export default function TravelPlanner() {
           />
         </div>
       </div>
+
       {/* Modals */}
       <EventModal
         isOpen={isEventModalOpen}
