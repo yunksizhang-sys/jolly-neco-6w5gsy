@@ -179,6 +179,11 @@ const formatDateSlash = (v) => {
   return `${y}/${Number(m)}/${Number(d)}`; // 2025/2/2（不補 0）
 };
 
+const formatTime24 = (t) => {
+  if (!t) return "";
+  return String(t).slice(0, 5); // "HH:MM"
+};
+
 const formatMMDD = (dateObj) => {
   return dateObj.toLocaleDateString("zh-TW", {
     month: "2-digit",
