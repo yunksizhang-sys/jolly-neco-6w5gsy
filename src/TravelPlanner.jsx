@@ -173,6 +173,12 @@ const getTripDateObj = (startDateStr, dayOffset) => {
   return d;
 };
 
+const formatDateSlash = (v) => {
+  if (!v) return "";
+  const [y, m, d] = v.split("-");
+  return `${y}/${Number(m)}/${Number(d)}`; // 2025/2/2（不補 0）
+};
+
 const formatMMDD = (dateObj) => {
   return dateObj.toLocaleDateString("zh-TW", {
     month: "2-digit",
@@ -1237,75 +1243,110 @@ function SettingsView({
             {/* 出發日 + 回程日期（自動計算天數） */}
             <div className="flex gap-3">
               {/* 出發日期 */}
-              <div className="flex-1">
-                <InputGroup
-                  label="出發日期"
-                  type="date"
-                  value={tripForm.startDate}
-                  onChange={(e) =>
-                    setTripForm((f) => ({
-                      ...f,
-                      startDate: e.target.value,
-                    }))
-                  }
-                />
+              <div className="flex-1 min-w-0">
+                <label className="block text-sm font-medium text-gray-500 mb-1">
+                  出發日期
+                </label>
+
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                    <Calendar size={18} />
+                  </div>
+
+                  {/* 顯示用：2025/02/02 */}
+                  <input
+                    type="text"
+                    readOnly
+                    value={formatDateSlash(tripForm.startDate)}
+                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 border-2 border-transparent
+                   focus:bg-white focus:border-blue-500 outline-none transition-all
+                   font-medium text-gray-800 whitespace-nowrap truncate"
+                  />
+
+                  {/* 真正 date picker：透明覆蓋可點，沒有尾巴 icon */}
+                  <input
+                    type="date"
+                    value={tripForm.startDate || ""}
+                    onChange={(e) =>
+                      setTripForm((f) => ({ ...f, startDate: e.target.value }))
+                    }
+                    className="absolute inset-0 w-full h-full opacity-[0.01] cursor-pointer z-20"
+                  />
+                </div>
               </div>
 
-              {/* 回程日期（改這裡） */}
-              <div className="flex-1">
-                <InputGroup
-                  label="回程日期"
-                  type="date"
-                  value={
-                    tripForm.startDate
-                      ? new Date(
-                          new Date(tripForm.startDate).setDate(
-                            new Date(tripForm.startDate).getDate() +
-                              (tripForm.duration || 1) -
-                              1
-                          )
+              {/* 回程日期 */}
+              <div className="flex-1 min-w-0">
+                <label className="block text-sm font-medium text-gray-500 mb-1">
+                  回程日期
+                </label>
+
+                {(() => {
+                  const endDate = tripForm.startDate
+                    ? new Date(
+                        new Date(tripForm.startDate).setDate(
+                          new Date(tripForm.startDate).getDate() +
+                            (tripForm.duration || 1) -
+                            1
                         )
-                          .toISOString()
-                          .slice(0, 10)
-                      : ""
-                  }
-                  onChange={(e) => {
-                    if (!tripForm.startDate) {
-                      alert("請先選擇出發日期");
-                      return;
-                    }
+                      )
+                        .toISOString()
+                        .slice(0, 10)
+                    : "";
 
-                    const start = new Date(tripForm.startDate);
-                    const end = new Date(e.target.value);
+                  return (
+                    <>
+                      <div className="relative">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                          <Calendar size={18} />
+                        </div>
 
-                    // 算出天數（含出發日，所以 +1）
-                    const diffDays =
-                      Math.round(
-                        (end.getTime() - start.getTime()) /
-                          (1000 * 60 * 60 * 24)
-                      ) + 1;
+                        <input
+                          type="text"
+                          readOnly
+                          value={formatDateSlash(endDate)}
+                          className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 border-2 border-transparent
+                         focus:bg-white focus:border-blue-500 outline-none transition-all
+                         font-medium text-gray-800 whitespace-nowrap truncate"
+                        />
 
-                    if (Number.isNaN(diffDays) || diffDays < 1) {
-                      alert("回程日期不能早於出發日期");
-                      return;
-                    }
+                        <input
+                          type="date"
+                          value={endDate}
+                          onChange={(e) => {
+                            if (!tripForm.startDate) {
+                              alert("請先選擇出發日期");
+                              return;
+                            }
+                            const start = new Date(tripForm.startDate);
+                            const end = new Date(e.target.value);
 
-                    // 直接寫回 duration，其他程式不用改
-                    setTripForm((f) => ({
-                      ...f,
-                      duration: diffDays,
-                    }));
-                  }}
-                />
+                            const diffDays =
+                              Math.round(
+                                (end - start) / (1000 * 60 * 60 * 24)
+                              ) + 1;
 
-                {/* 小字顯示自動計算出的天數 */}
-                {tripForm.startDate && tripForm.duration && (
-                  <p className="mt-1 text-[11px] text-gray-400">
-                    共 {tripForm.duration} 天
-                  </p>
-                )}
+                            if (Number.isNaN(diffDays) || diffDays < 1) {
+                              alert("回程日期不能早於出發日期");
+                              return;
+                            }
+                            setTripForm((f) => ({ ...f, duration: diffDays }));
+                          }}
+                          className="absolute inset-0 w-full h-full opacity-[0.01] cursor-pointer z-20"
+                        />
+                      </div>
+
+                      {tripForm.startDate && tripForm.duration ? (
+                        <p className="mt-1 text-[11px] text-gray-400">
+                          共 {tripForm.duration} 天
+                        </p>
+                      ) : null}
+                    </>
+                  );
+                })()}
               </div>
             </div>
+
             <div className="relative">
               <InputGroup
                 label="地點 / 地址（用來抓天氣）"
