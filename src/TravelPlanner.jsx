@@ -223,53 +223,7 @@ const NavButton = ({ icon: Icon, label, active, onClick, theme }) => (
   </button>
 );
 
-const InputGroup = ({ label, type = "text", value, onChange, placeholder }) => {
-  const isTime = type === "time";
-  const isDate = type === "date";
-  const isPicker = isTime || isDate;
-
-  return (
-    <div className="group">
-      <label className="block text-sm font-medium text-gray-500 mb-1 group-focus-within:text-blue-500 transition-colors">
-        {label}
-      </label>
-
-      <div className="relative">
-        {/* 左側 icon：我們自己畫，永遠都會出現 */}
-        {isTime && (
-          <Clock
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-          />
-        )}
-        {isDate && (
-          <Calendar
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-          />
-        )}
-
-        <input
-          type={type}
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          className={[
-            "w-full px-3 py-3 rounded-xl bg-gray-50 border-2 border-transparent",
-            "focus:bg-white focus:border-blue-500 outline-none transition-all",
-            "font-medium text-gray-800 placeholder-gray-300",
-            // ✅ 有 icon 的話，左邊留空間
-            isPicker ? "pl-10" : "",
-            // ✅ 你的原本設定保留
-            isPicker ? "pr-16" : "",
-            "overflow-visible",
-            "appearance-none",
-          ].join(" ")}
-        />
-      </div>
-    </div>
-  );
-};
+改成 09:00
 
 const MapButton = ({ type, query }) => {
   const openMap = (e) => {
