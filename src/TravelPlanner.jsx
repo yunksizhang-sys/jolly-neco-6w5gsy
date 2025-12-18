@@ -222,20 +222,36 @@ const NavButton = ({ icon: Icon, label, active, onClick, theme }) => (
   </button>
 );
 
-const InputGroup = ({ label, type = "text", value, onChange, placeholder }) => (
-  <div className="group">
-    <label className="block text-sm font-medium text-gray-500 mb-1 group-focus-within:text-blue-500 transition-colors">
-      {label}
-    </label>
-    <input
-      type={type}
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      className="w-full px-4 py-3 rounded-xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all font-medium text-gray-800 placeholder-gray-300 bg-gray-50"
-    />
-  </div>
-);
+const InputGroup = ({ label, type = "text", value, onChange, placeholder }) => {
+  const isPicker = type === "time" || type === "date";
+
+  return (
+    <div className="group">
+      <label className="block text-sm font-medium text-gray-500 mb-1 group-focus-within:text-blue-500 transition-colors">
+        {label}
+      </label>
+
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className={[
+          "w-full px-4 py-3 rounded-xl bg-gray-50 border-2 border-transparent",
+          "focus:bg-white focus:border-blue-500 outline-none transition-all",
+          "font-medium text-gray-800 placeholder-gray-300",
+          // ✅ 給 iOS time/date 右側 icon 留空間，避免被吃掉
+          isPicker ? "pr-12" : "",
+          // ✅ 避免某些手機/瀏覽器把內建 icon 裁切
+          "overflow-visible",
+          // ✅ 讓 iOS 的日期/時間欄位看起來更一致（可留可不留）
+          "appearance-none",
+        ].join(" ")}
+      />
+    </div>
+  );
+};
+
 
 const MapButton = ({ type, query }) => {
   const openMap = (e) => {
