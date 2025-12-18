@@ -4030,7 +4030,13 @@ export default function TravelPlanner() {
       </div>
 
       {/* 3. 底部導航 (標準 4 欄) - FIXED */}
-     <div className="flex-none bg-white border-t border-gray-100 px-6 py-3 flex justify-around items-center z-50 pb-6 safe-area-bottom shadow-[0_-5px_15px_rgba(0,0,0,0.02)]">
+     <div className="
+    fixed left-1/2 bottom-[-2px] -translate-x-1/2
+    w-full max-w-[480px]
+    z-50
+    px-4
+    pb-[calc(12px+env(safe-area-inset-bottom))]
+  ">
         <div
           className="
       bg-white/95 backdrop-blur
