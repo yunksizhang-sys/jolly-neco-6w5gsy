@@ -4029,38 +4029,56 @@ export default function TravelPlanner() {
         </div>
       </div>
 
-      {/* 3. 底部導航 (標準 4 欄) */}
-      <div className="flex-none bg-white border-t border-gray-100 px-6 py-3 flex justify-around items-center z-50 pb-6 safe-area-bottom shadow-[0_-5px_15px_rgba(0,0,0,0.02)]">
-        <NavButton
-          icon={MapPin}
-          label="行程"
-          active={activeTab === "itinerary"}
-          onClick={() => setActiveTab("itinerary")}
-          theme={currentTheme}
-        />
-        <NavButton
-          icon={ShoppingBag}
-          label="清單"
-          active={activeTab === "packing"}
-          onClick={() => setActiveTab("packing")}
-          theme={currentTheme}
-        />
-        <NavButton
-          icon={Wallet}
-          label="分帳"
-          active={activeTab === "budget"}
-          onClick={() => setActiveTab("budget")}
-          theme={currentTheme}
-        />
-        <NavButton
-          icon={Settings}
-          label="設定"
-          active={activeTab === "settings"}
-          onClick={() => setActiveTab("settings")}
-          theme={currentTheme}
-        />
+      {/* 3. 底部導航 (標準 4 欄) - FIXED */}
+      <div
+        className="
+    fixed left-1/2 bottom-0 -translate-x-1/2
+    w-full max-w-[480px]
+    z-50
+    px-4
+    pb-[calc(12px+env(safe-area-inset-bottom))]
+  "
+      >
+        <div
+          className="
+      bg-white/95 backdrop-blur
+      border border-gray-200
+      rounded-2xl
+      shadow-[0_-8px_20px_rgba(0,0,0,0.08)]
+      px-6 py-3
+      flex justify-around items-center
+    "
+        >
+          <NavButton
+            icon={MapPin}
+            label="行程"
+            active={activeTab === "itinerary"}
+            onClick={() => setActiveTab("itinerary")}
+            theme={currentTheme}
+          />
+          <NavButton
+            icon={ShoppingBag}
+            label="清單"
+            active={activeTab === "packing"}
+            onClick={() => setActiveTab("packing")}
+            theme={currentTheme}
+          />
+          <NavButton
+            icon={Wallet}
+            label="分帳"
+            active={activeTab === "budget"}
+            onClick={() => setActiveTab("budget")}
+            theme={currentTheme}
+          />
+          <NavButton
+            icon={Settings}
+            label="設定"
+            active={activeTab === "settings"}
+            onClick={() => setActiveTab("settings")}
+            theme={currentTheme}
+          />
+        </div>
       </div>
-
       {/* Modals */}
       <EventModal
         isOpen={isEventModalOpen}
