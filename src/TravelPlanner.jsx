@@ -3274,30 +3274,66 @@ function BudgetView({ expenses, setExpenses, trip, setTrip, theme }) {
             </div>
           </div>
 
-          {/* 日期與時間 */}
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <InputGroup
-                label="日期"
-                type="date"
-                value={expenseForm.date}
-                onChange={(e) =>
-                  setExpenseForm({ ...expenseForm, date: e.target.value })
-                }
-              />
-            </div>
-            <div className="flex-1">
-              <InputGroup
-                label="時間"
-                type="time"
-                value={expenseForm.time}
-                onChange={(e) =>
-                  setExpenseForm({ ...expenseForm, time: e.target.value })
-                }
-              />
-            </div>
-          </div>
+{/* 日期與時間 */}
+<div className="flex gap-4">
+  {/* 日期 */}
+  <div className="flex-1">
+    <label className="block text-sm font-medium text-gray-500 mb-1">
+      日期
+    </label>
 
+    <div className="relative">
+      {/* 顯示用（2025/2/2） */}
+      <input
+        type="text"
+        readOnly
+        value={formatDateSlash(expenseForm.date)}
+        className="w-full px-4 py-3 rounded-xl bg-gray-50 border-2 border-transparent
+                   focus:bg-white focus:border-blue-500 outline-none transition-all
+                   font-medium text-gray-800"
+      />
+
+      {/* 真正 date picker（透明覆蓋） */}
+      <input
+        type="date"
+        value={expenseForm.date}
+        onChange={(e) =>
+          setExpenseForm({ ...expenseForm, date: e.target.value })
+        }
+        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+      />
+    </div>
+  </div>
+
+  {/* 時間 */}
+  <div className="flex-1">
+    <label className="block text-sm font-medium text-gray-500 mb-1">
+      時間
+    </label>
+
+    <div className="relative">
+      {/* 顯示用（24 小時制 HH:MM） */}
+      <input
+        type="text"
+        readOnly
+        value={formatTime24(expenseForm.time)}
+        className="w-full px-4 py-3 rounded-xl bg-gray-50 border-2 border-transparent
+                   focus:bg-white focus:border-blue-500 outline-none transition-all
+                   font-medium text-gray-800"
+      />
+
+      {/* 真正 time picker（透明覆蓋） */}
+      <input
+        type="time"
+        value={expenseForm.time}
+        onChange={(e) =>
+          setExpenseForm({ ...expenseForm, time: e.target.value })
+        }
+        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+      />
+    </div>
+  </div>
+</div>
           {/* 付款者 */}
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-2">
