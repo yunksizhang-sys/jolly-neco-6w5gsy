@@ -4287,6 +4287,7 @@ export default function TravelPlanner() {
           />
 
           <button
+            type="button"
             onClick={() => {
               setTrip({
                 ...trip,
