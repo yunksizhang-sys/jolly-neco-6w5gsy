@@ -4289,19 +4289,24 @@ export default function TravelPlanner() {
           <button
             type="button"
             onClick={() => {
-              setTrip({
-                ...trip,
-                coverImage: tempCoverImage,
-                weatherLat: trip.weatherLat,
-                weatherLon: trip.weatherLon,
-                weatherTimezone: trip.weatherTimezone,
+              setTrip((prev) => {
+                if (!prev) return prev;
+                return {
+                  ...prev,
+                  coverImage: tempCoverImage || "",
+                  weatherLat: prev.weatherLat,
+                  weatherLon: prev.weatherLon,
+                  weatherTimezone: prev.weatherTimezone,
+                };
               });
+
               setIsHeaderEditOpen(false);
             }}
             className={`w-full py-3 rounded-xl ${currentTheme.primary} text-white font-bold mt-2 shadow-lg shadow-blue-500/30`}
           >
             完成
           </button>
+
         </div>
       </Modal>
 
