@@ -284,21 +284,37 @@ const InputGroup = ({ label, type = "text", value, onChange, placeholder }) => {
 
 const MapButton = ({ type, query }) => {
   const openMap = (e) => {
+    e.preventDefault();
     e.stopPropagation();
-    window.open(
+
+    const q = (query || "").trim();
+    if (!q) return;
+
+    const url =
       type === "google"
-        ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-            query
-          )}`
-        : `https://map.naver.com/v5/search/${encodeURIComponent(query)}`,
-      "_blank"
-    );
+        ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`
+        : `https://map.naver.com/v5/search/${encodeURIComponent(q)}`;
+
+    window.open(url, "_blank", "noopener,noreferrer");
   };
+
+  const disabled = !(query || "").trim();
+
   return (
     <button
-      onPointerDown={(e) => e.stopPropagation()}
+      type="button"
+      onPointerDown={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
       onClick={openMap}
-      className="px-2.5 py-1.5 rounded-lg bg-gray-50 text-[10px] font-bold text-gray-500 hover:bg-gray-100 flex items-center gap-1 transition-colors border border-gray-200"
+      disabled={disabled}
+      className={[
+        "px-2.5 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-colors border",
+        disabled
+          ? "bg-gray-50 text-gray-300 border-gray-200 cursor-not-allowed"
+          : "bg-gray-50 text-gray-500 hover:bg-gray-100 border-gray-200",
+      ].join(" ")}
     >
       {type === "google" ? <Map size={10} /> : <Navigation size={10} />}
       {type === "google" ? "Google" : "Naver"}
@@ -308,7 +324,16 @@ const MapButton = ({ type, query }) => {
 
 const ToolBtn = ({ icon: Icon, onClick, label }) => (
   <button
-    onClick={onClick}
+    type="button"
+    onPointerDown={(e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    }}
+    onClick={(e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onClick?.();
+    }}
     className="p-3 text-white/90 hover:text-white hover:bg-white/10 rounded-full transition-colors flex items-center justify-center"
     title={label}
   >
@@ -318,53 +343,71 @@ const ToolBtn = ({ icon: Icon, onClick, label }) => (
 
 const CoverUploadSection = ({ tempCoverImage, setTempCoverImage }) => {
   const coverFileInputRef = useRef(null);
+
   const handleCoverUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setTempCoverImage(reader.result);
-      reader.readAsDataURL(file);
-    }
+    e.preventDefault();
+    e.stopPropagation();
+
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => setTempCoverImage(reader.result);
+    reader.readAsDataURL(file);
   };
+
+  const safeSrc =
+    tempCoverImage ||
+    "https://via.placeholder.com/400x200?text=No+Image";
+
   return (
     <div>
       <label className="block text-sm font-medium text-gray-600 mb-2">
         封面照片
       </label>
-      <div
+
+      <button
+        type="button"
         className="w-full h-40 rounded-xl overflow-hidden relative group cursor-pointer border-2 border-dashed border-gray-200 hover:border-blue-400 transition-colors"
-        onClick={() => coverFileInputRef.current.click()}
+        onPointerDown={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          coverFileInputRef.current?.click();
+        }}
       >
         <img
-          src={tempCoverImage}
+          src={safeSrc}
           className="w-full h-full object-cover"
           alt="preview"
-          onError={(e) =>
-            (e.target.src = "https://via.placeholder.com/400x200?text=No+Image")
-          }
+          onError={(e) => {
+            e.currentTarget.src =
+              "https://via.placeholder.com/400x200?text=No+Image";
+          }}
         />
         <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 flex flex-col items-center justify-center text-white transition-colors">
           <Camera size={24} className="mb-1" />
           <span className="text-xs font-bold">點擊更換封面</span>
         </div>
-        <input
-          type="file"
-          ref={coverFileInputRef}
-          accept="image/*"
-          className="hidden"
-          onChange={handleCoverUpload}
-        />
-      </div>
+      </button>
+
+      <input
+        type="file"
+        ref={coverFileInputRef}
+        accept="image/*"
+        className="hidden"
+        onChange={handleCoverUpload}
+      />
+
       <div className="mt-2 flex items-center gap-2">
         <LinkIcon size={14} className="text-gray-400" />
         <input
           type="text"
           placeholder="或貼上圖片網址..."
-          value={
-            tempCoverImage && tempCoverImage.startsWith("http")
-              ? tempCoverImage
-              : ""
-          }
+          value={tempCoverImage && tempCoverImage.startsWith("http") ? tempCoverImage : ""}
           onChange={(e) => setTempCoverImage(e.target.value)}
           className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-xs text-gray-600 outline-none focus:border-blue-500"
         />
@@ -372,7 +415,6 @@ const CoverUploadSection = ({ tempCoverImage, setTempCoverImage }) => {
     </div>
   );
 };
-
 // ==========================================
 // 3. Modals
 // ==========================================
@@ -577,49 +619,65 @@ const EventModal = ({
         />
 
         <div>
-          <label className="block text-sm font-medium text-gray-500 mb-1">
-            相簿照片
-          </label>
-          <div className="space-y-3">
-            <div
-              className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:bg-gray-50 transition-colors relative cursor-pointer bg-gray-50/50"
-              onClick={() => fileInputRef.current.click()}
-            >
-              <input
-                type="file"
-                ref={fileInputRef}
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageUpload}
-              />
-              {formEvent.image ? (
-                <div
-                  className="relative inline-block"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <img
-                    src={formEvent.image}
-                    alt="preview"
-                    className="h-32 rounded-lg object-cover shadow-sm border border-gray-200"
-                  />
-                  <button
-                    onClick={removeImage}
-                    className="absolute -top-2 -right-2 bg-white text-gray-500 rounded-full p-1 shadow-md hover:text-red-500 border border-gray-100"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-20">
-                  <Camera size={24} className="text-gray-400 mb-2" />
-                  <span className="text-xs text-gray-500">
-                    點擊選擇裝置照片
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
+  <label className="block text-sm font-medium text-gray-500 mb-1">
+    相簿照片
+  </label>
+
+  <div className="space-y-3">
+    <button
+      type="button"
+      className="w-full border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:bg-gray-50 transition-colors relative cursor-pointer bg-gray-50/50"
+      onPointerDown={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        fileInputRef.current?.click();
+      }}
+    >
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept="image/*"
+        className="hidden"
+        onChange={handleImageUpload}
+      />
+
+      {formEvent.image ? (
+        <div className="relative inline-block">
+          <img
+            src={formEvent.image}
+            alt="preview"
+            className="h-32 rounded-lg object-cover shadow-sm border border-gray-200"
+          />
+
+          <button
+            type="button"
+            onPointerDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              removeImage();
+            }}
+            className="absolute -top-2 -right-2 bg-white text-gray-500 rounded-full p-1 shadow-md hover:text-red-500 border border-gray-100"
+          >
+            <X size={14} />
+          </button>
         </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center h-20">
+          <Camera size={24} className="text-gray-400 mb-2" />
+          <span className="text-xs text-gray-500">點擊選擇裝置照片</span>
+        </div>
+      )}
+    </button>
+  </div>
+</div>
 
         <InputGroup
           label="備註"
