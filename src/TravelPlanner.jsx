@@ -312,48 +312,62 @@ const ToolBtn = ({ icon: Icon, onClick, label }) => (
 );
 
 const CoverUploadSection = ({ tempCoverImage, setTempCoverImage }) => {
-  const coverFileInputRef = useRef(null);
+  const inputId = React.useId();
+
   const handleCoverUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setTempCoverImage(reader.result);
-      reader.readAsDataURL(file);
-    }
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // ✅ 先用 objectURL 立刻預覽（避免 FileReader 還沒跑完）
+    const previewUrl = URL.createObjectURL(file);
+    setTempCoverImage(previewUrl);
+
+    // ✅ 再用 base64 存成可持久化（刷新後也在）
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result;
+      if (typeof base64 === "string") setTempCoverImage(base64);
+      URL.revokeObjectURL(previewUrl);
+    };
+    reader.readAsDataURL(file);
+
+    // ✅ 讓你重選同一張也會觸發 onChange
+    e.target.value = "";
   };
-  const safeCoverSrc =
-    tempCoverImage && String(tempCoverImage).trim()
-      ? tempCoverImage
-      : "https://via.placeholder.com/400x200?text=No+Image";
+
   return (
     <div>
       <label className="block text-sm font-medium text-gray-600 mb-2">
         封面照片
       </label>
-      <div
-        className="w-full h-40 rounded-xl overflow-hidden relative group cursor-pointer border-2 border-dashed border-gray-200 hover:border-blue-400 transition-colors"
-        onClick={() => coverFileInputRef.current.click()}
+
+      {/* ✅ 用 label 觸發檔案選擇器（手機最穩） */}
+      <label
+        htmlFor={inputId}
+        className="w-full h-40 rounded-xl overflow-hidden relative group cursor-pointer border-2 border-dashed border-gray-200 hover:border-blue-400 transition-colors block"
       >
         <img
-          src={safeCoverSrc}
+          src={
+            tempCoverImage ||
+            "https://via.placeholder.com/400x200?text=No+Image"
+          }
           className="w-full h-full object-cover"
           alt="preview"
-          onError={(e) =>
-            (e.target.src = "https://via.placeholder.com/400x200?text=No+Image")
-          }
         />
         <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 flex flex-col items-center justify-center text-white transition-colors">
           <Camera size={24} className="mb-1" />
           <span className="text-xs font-bold">點擊更換封面</span>
         </div>
-        <input
-          type="file"
-          ref={coverFileInputRef}
-          accept="image/*"
-          className="hidden"
-          onChange={handleCoverUpload}
-        />
-      </div>
+      </label>
+
+      <input
+        id={inputId}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleCoverUpload}
+      />
+
       <div className="mt-2 flex items-center gap-2">
         <LinkIcon size={14} className="text-gray-400" />
         <input
@@ -4104,7 +4118,7 @@ export default function TravelPlanner() {
             {/* 編輯鈕（最上面） */}
             <button
               onClick={() => {
-                setTempCoverImage(trip.coverImage);
+                setTempCoverImage(trip.coverImage|| "");
                 setIsHeaderEditOpen(true);
               }}
               className="p-2.5 bg-black/30 backdrop-blur-md rounded-full text-white hover:bg-black/50 transition-colors border border-white/20"
@@ -4306,7 +4320,6 @@ export default function TravelPlanner() {
           >
             完成
           </button>
-
         </div>
       </Modal>
 
