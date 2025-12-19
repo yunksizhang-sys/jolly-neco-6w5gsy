@@ -321,6 +321,10 @@ const CoverUploadSection = ({ tempCoverImage, setTempCoverImage }) => {
       reader.readAsDataURL(file);
     }
   };
+  const safeCoverSrc =
+    tempCoverImage && String(tempCoverImage).trim()
+      ? tempCoverImage
+      : "https://via.placeholder.com/400x200?text=No+Image";
   return (
     <div>
       <label className="block text-sm font-medium text-gray-600 mb-2">
@@ -331,7 +335,7 @@ const CoverUploadSection = ({ tempCoverImage, setTempCoverImage }) => {
         onClick={() => coverFileInputRef.current.click()}
       >
         <img
-          src={tempCoverImage}
+          src={safeCoverSrc}
           className="w-full h-full object-cover"
           alt="preview"
           onError={(e) =>
