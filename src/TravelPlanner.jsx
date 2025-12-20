@@ -312,26 +312,27 @@ const ToolBtn = ({ icon: Icon, onClick, label }) => (
 );
 
 const CoverUploadSection = ({ tempCoverImage, setTempCoverImage }) => {
-  const inputId = React.useId();
+  const inputId = "cover-upload-input";
 
   const handleCoverUpload = (e) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files && e.target.files[0];
     if (!file) return;
 
-    // ✅ 先用 objectURL 立刻預覽（避免 FileReader 還沒跑完）
-    const previewUrl = URL.createObjectURL(file);
-    setTempCoverImage(previewUrl);
+    // ✅ iOS 必須先用 objectURL
+    const objectUrl = URL.createObjectURL(file);
+    setTempCoverImage(objectUrl);
 
-    // ✅ 再用 base64 存成可持久化（刷新後也在）
+    // ✅ 再轉 base64（存資料用）
     const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64 = reader.result;
-      if (typeof base64 === "string") setTempCoverImage(base64);
-      URL.revokeObjectURL(previewUrl);
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        setTempCoverImage(reader.result);
+      }
+      URL.revokeObjectURL(objectUrl);
     };
     reader.readAsDataURL(file);
 
-    // ✅ 讓你重選同一張也會觸發 onChange
+    // ✅ iOS：允許重選同一張
     e.target.value = "";
   };
 
@@ -341,20 +342,24 @@ const CoverUploadSection = ({ tempCoverImage, setTempCoverImage }) => {
         封面照片
       </label>
 
-      {/* ✅ 用 label 觸發檔案選擇器（手機最穩） */}
+      {/* ⭐ 關鍵：label + htmlFor */}
       <label
         htmlFor={inputId}
-        className="w-full h-40 rounded-xl overflow-hidden relative group cursor-pointer border-2 border-dashed border-gray-200 hover:border-blue-400 transition-colors block"
+        className="block w-full h-40 rounded-xl overflow-hidden relative
+                   border-2 border-dashed border-gray-200
+                   hover:border-blue-400 transition-colors cursor-pointer"
       >
         <img
           src={
             tempCoverImage ||
             "https://via.placeholder.com/400x200?text=No+Image"
           }
+          alt="cover"
           className="w-full h-full object-cover"
-          alt="preview"
         />
-        <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 flex flex-col items-center justify-center text-white transition-colors">
+
+        <div className="absolute inset-0 bg-black/30 flex flex-col
+                        items-center justify-center text-white">
           <Camera size={24} className="mb-1" />
           <span className="text-xs font-bold">點擊更換封面</span>
         </div>
@@ -367,24 +372,10 @@ const CoverUploadSection = ({ tempCoverImage, setTempCoverImage }) => {
         className="hidden"
         onChange={handleCoverUpload}
       />
-
-      <div className="mt-2 flex items-center gap-2">
-        <LinkIcon size={14} className="text-gray-400" />
-        <input
-          type="text"
-          placeholder="或貼上圖片網址..."
-          value={
-            tempCoverImage && tempCoverImage.startsWith("http")
-              ? tempCoverImage
-              : ""
-          }
-          onChange={(e) => setTempCoverImage(e.target.value)}
-          className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-xs text-gray-600 outline-none focus:border-blue-500"
-        />
-      </div>
     </div>
   );
 };
+
 
 // ==========================================
 // 3. Modals
