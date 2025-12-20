@@ -314,26 +314,58 @@ const ToolBtn = ({ icon: Icon, onClick, label }) => (
 const CoverUploadSection = ({ tempCoverImage, setTempCoverImage }) => {
   const inputId = "cover-upload-input";
 
-  const handleCoverUpload = (e) => {
-    const file = e.target.files && e.target.files[0];
+  // ✅ iOS / 手機端：先壓縮再轉 base64，避免太大存不進去
+  const compressToDataUrl = (file, maxW = 1200, quality = 0.82) =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+
+      img.onload = () => {
+        try {
+          const scale = Math.min(1, maxW / img.width);
+          const w = Math.round(img.width * scale);
+          const h = Math.round(img.height * scale);
+
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+
+          // ✅ 用 JPEG 壓縮，容量差超多（iOS 比較吃得下）
+          const dataUrl = canvas.toDataURL("image/jpeg", quality);
+
+          URL.revokeObjectURL(url);
+          resolve(dataUrl);
+        } catch (e) {
+          URL.revokeObjectURL(url);
+          reject(e);
+        }
+      };
+
+      img.onerror = (e) => {
+        URL.revokeObjectURL(url);
+        reject(e);
+      };
+
+      img.src = url;
+    });
+
+  const handleCoverUpload = async (e) => {
+    const file = e.target.files?.[0];
     if (!file) return;
 
-    // ✅ iOS 必須先用 objectURL
-    const objectUrl = URL.createObjectURL(file);
-    setTempCoverImage(objectUrl);
-
-    // ✅ 再轉 base64（存資料用）
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        setTempCoverImage(reader.result);
-      }
-      URL.revokeObjectURL(objectUrl);
-    };
-    reader.readAsDataURL(file);
-
-    // ✅ iOS：允許重選同一張
-    e.target.value = "";
+    try {
+      const dataUrl = await compressToDataUrl(file);
+      setTempCoverImage(dataUrl); // ✅ 這裡就是可保存的 base64
+    } catch (err) {
+      console.error("cover upload failed:", err);
+      alert("照片讀取失敗，請換一張或改用較小圖片");
+    } finally {
+      // ✅ 允許重選同一張
+      e.target.value = "";
+    }
   };
 
   return (
@@ -342,24 +374,19 @@ const CoverUploadSection = ({ tempCoverImage, setTempCoverImage }) => {
         封面照片
       </label>
 
-      {/* ⭐ 關鍵：label + htmlFor */}
+      {/* ✅ iOS 穩：label 觸發 file input */}
       <label
         htmlFor={inputId}
         className="block w-full h-40 rounded-xl overflow-hidden relative
-                   border-2 border-dashed border-gray-200
-                   hover:border-blue-400 transition-colors cursor-pointer"
+                   border-2 border-dashed border-gray-200 hover:border-blue-400
+                   transition-colors cursor-pointer"
       >
         <img
-          src={
-            tempCoverImage ||
-            "https://via.placeholder.com/400x200?text=No+Image"
-          }
-          alt="cover"
+          src={tempCoverImage || "https://via.placeholder.com/400x200?text=No+Image"}
           className="w-full h-full object-cover"
+          alt="preview"
         />
-
-        <div className="absolute inset-0 bg-black/30 flex flex-col
-                        items-center justify-center text-white">
+        <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center text-white">
           <Camera size={24} className="mb-1" />
           <span className="text-xs font-bold">點擊更換封面</span>
         </div>
@@ -375,6 +402,7 @@ const CoverUploadSection = ({ tempCoverImage, setTempCoverImage }) => {
     </div>
   );
 };
+
 
 
 // ==========================================
